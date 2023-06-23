@@ -41,6 +41,30 @@ class AlbumMiddleware(BaseMiddleware):
             del self.album_data[message.media_group_id]
 
 
+async def source_link_forwarded(message):
+    if message.forward_from_chat and message.forward_from_chat.username is not None:
+        source_link = '\n\n🐘 Источник: ' + hlink(message.forward_from_chat.title, ('t.me/' + message.forward_from_chat.username))
+        return source_link
+    elif message.forward_from_chat and message.forward_from_chat.username is None:
+        source_link = '\n\n🐘 Источник: ' + message.forward_from_chat.title
+        return source_link
+    elif message.forward_from and message.forward_from.username is not None:
+        source_link = '\n\n🐘 Источник: ' + hlink(message.forward_from.full_name, ('t.me/' + message.forward_from.username))
+        return source_link
+    else:
+        source_link = '\n\n🐘 Источник: наш слон'
+        return source_link
+
+
+async def source_link_sent(message):
+    if message.from_user.full_name is not None:
+        source_link = '\n\n🐘 Источник: ' + hlink(message.from_user.full_name, message.from_user.url)
+        return source_link
+    else:
+        source_link = '\n\n🐘 Источник: ' + message.from_user.full_name
+        return source_link
+
+
 # start command handler
 @dp.message_handler(commands=['start'])
 async def start_command(message: types.Message):
@@ -54,14 +78,7 @@ async def start_command(message: types.Message):
 @dp.message_handler(is_forwarded=True, content_types=types.ContentType.TEXT)
 async def text_forwarded(message: types.Message):
     if message.chat.id in ALLOWED_USERS:
-        if message.forward_from_chat and message.forward_from_chat.username is not None:
-            source_link = '\n\n🐘 Источник: ' + hlink(message.forward_from_chat.title, ('t.me/' + message.forward_from_chat.username))
-        elif message.forward_from_chat and message.forward_from_chat.username is None:
-            source_link = '\n\n🐘 Источник: ' + message.forward_from_chat.title
-        elif message.forward_from and message.forward_from.username is not None:
-            source_link = '\n\n🐘 Источник: ' + hlink(message.forward_from.full_name, ('t.me/' + message.forward_from.username))
-        else:
-            source_link = '\n\n🐘 Источник: наш слон'
+        source_link = await source_link_forwarded(message)
         resend_message = message.text + ADDED_LINK
         await bot.send_message(chat_id=CHANNEL_ID, text=resend_message + source_link, disable_web_page_preview=True)
     else:
@@ -70,10 +87,7 @@ async def text_forwarded(message: types.Message):
 @dp.message_handler(is_forwarded=False, content_types=types.ContentType.TEXT)
 async def text_sent(message: types.Message):
     if message.chat.id in ALLOWED_USERS:
-        if message.from_user.full_name is not None:
-            source_link = '\n\n🐘 Источник: ' + hlink(message.from_user.full_name, message.from_user.url)
-        else:
-            source_link = '\n\n🐘 Источник: ' + message.from_user.full_name
+        source_link = await source_link_sent(message)
         resend_message = message.text + ADDED_LINK
         await bot.send_message(chat_id=CHANNEL_ID, text=resend_message + source_link, disable_web_page_preview=True)
     else:
@@ -84,14 +98,7 @@ async def text_sent(message: types.Message):
 @dp.message_handler(is_forwarded=True, is_media_group=False, content_types=types.ContentType.PHOTO)
 async def photo_forwarded(message: types.Message):
     if message.chat.id in ALLOWED_USERS:
-        if message.forward_from_chat and message.forward_from_chat.username is not None:
-            source_link = '\n\n🐘 Источник: ' + hlink(message.forward_from_chat.title, ('t.me/' + message.forward_from_chat.username))
-        elif message.forward_from_chat and message.forward_from_chat.username is None:
-            source_link = '\n\n🐘 Источник: ' + message.forward_from_chat.title
-        elif message.forward_from and message.forward_from.username is not None:
-            source_link = '\n\n🐘 Источник: ' + hlink(message.forward_from.full_name, ('t.me/' + message.forward_from.username))
-        else:
-            source_link = '\n\n🐘 Источник: наш слон'
+        source_link = await source_link_forwarded(message)
         resend_message = ADDED_LINK
         if message.caption:
             resend_message = message.caption + ADDED_LINK
@@ -102,10 +109,7 @@ async def photo_forwarded(message: types.Message):
 @dp.message_handler(is_forwarded=False, is_media_group=False, content_types=types.ContentType.PHOTO)
 async def photo_sent(message: types.Message):
     if message.chat.id in ALLOWED_USERS:
-        if message.from_user.full_name is not None:
-            source_link = '\n\n🐘 Источник: ' + hlink(message.from_user.full_name, message.from_user.url)
-        else:
-            source_link = '\n\n🐘 Источник: ' + message.from_user.full_name
+        source_link = await source_link_sent(message)
         resend_message = ADDED_LINK
         if message.caption:
             resend_message = message.caption + ADDED_LINK
@@ -118,14 +122,7 @@ async def photo_sent(message: types.Message):
 @dp.message_handler(is_forwarded=True, is_media_group=False, content_types=types.ContentType.VIDEO)
 async def video_forwarded(message: types.Message):
     if message.chat.id in ALLOWED_USERS:
-        if message.forward_from_chat and message.forward_from_chat.username is not None:
-            source_link = '\n\n🐘 Источник: ' + hlink(message.forward_from_chat.title, ('t.me/' + message.forward_from_chat.username))
-        elif message.forward_from_chat and message.forward_from_chat.username is None:
-            source_link = '\n\n🐘 Источник: ' + message.forward_from_chat.title
-        elif message.forward_from and message.forward_from.username is not None:
-            source_link = '\n\n🐘 Источник: ' + hlink(message.forward_from.full_name, ('t.me/' + message.forward_from.username))
-        else:
-            source_link = '\n\n🐘 Источник: наш слон'
+        source_link = await source_link_forwarded(message)
         resend_message = ADDED_LINK
         if message.caption:
             resend_message = message.caption + ADDED_LINK
@@ -140,10 +137,7 @@ async def video_forwarded(message: types.Message):
 @dp.message_handler(is_forwarded=False, is_media_group=False, content_types=types.ContentType.VIDEO)
 async def video_sent(message: types.Message):
     if message.chat.id in ALLOWED_USERS:
-        if message.from_user.full_name is not None:
-            source_link = '\n\n🐘 Источник: ' + hlink(message.from_user.full_name, message.from_user.url)
-        else:
-            source_link = '\n\n🐘 Источник: ' + message.from_user.full_name
+        source_link = await source_link_sent(message)
         resend_message = ADDED_LINK
         if message.caption:
             resend_message = message.caption + ADDED_LINK
@@ -169,14 +163,7 @@ async def video_note_sent(message: types.Message):
 @dp.message_handler(is_forwarded=True, is_media_group=False, content_types=types.ContentType.DOCUMENT)
 async def document_forwarded(message: types.Message):
     if message.chat.id in ALLOWED_USERS:
-        if message.forward_from_chat and message.forward_from_chat.username is not None:
-            source_link = '\n\n🐘 Источник: ' + hlink(message.forward_from_chat.title, ('t.me/' + message.forward_from_chat.username))
-        elif message.forward_from_chat and message.forward_from_chat.username is None:
-            source_link = '\n\n🐘 Источник: ' + message.forward_from_chat.title
-        elif message.forward_from and message.forward_from.username is not None:
-            source_link = '\n\n🐘 Источник: ' + hlink(message.forward_from.full_name, ('t.me/' + message.forward_from.username))
-        else:
-            source_link = '\n\n🐘 Источник: наш слон'
+        source_link = await source_link_forwarded(message)
         resend_message = ADDED_LINK
         if message.caption:
             resend_message = message.caption + ADDED_LINK
@@ -187,10 +174,7 @@ async def document_forwarded(message: types.Message):
 @dp.message_handler(is_forwarded=False, is_media_group=False, content_types=types.ContentType.DOCUMENT)
 async def document_sent(message: types.Message):
     if message.chat.id in ALLOWED_USERS:
-        if message.from_user.full_name is not None:
-            source_link = '\n\n🐘 Источник: ' + hlink(message.from_user.full_name, message.from_user.url)
-        else:
-            source_link = '\n\n🐘 Источник: ' + message.from_user.full_name
+        source_link = await source_link_sent(message)
         resend_message = ADDED_LINK
         if message.caption:
             resend_message = message.caption + ADDED_LINK
@@ -203,14 +187,7 @@ async def document_sent(message: types.Message):
 @dp.message_handler(is_forwarded=True, is_media_group=False, content_types=types.ContentType.AUDIO)
 async def audio_forwarded(message: types.Message):
     if message.chat.id in ALLOWED_USERS:
-        if message.forward_from_chat and message.forward_from_chat.username is not None:
-            source_link = '\n\n🐘 Источник: ' + hlink(message.forward_from_chat.title, ('t.me/' + message.forward_from_chat.username))
-        elif message.forward_from_chat and message.forward_from_chat.username is None:
-            source_link = '\n\n🐘 Источник: ' + message.forward_from_chat.title
-        elif message.forward_from and message.forward_from.username is not None:
-            source_link = '\n\n🐘 Источник: ' + hlink(message.forward_from.full_name, ('t.me/' + message.forward_from.username))
-        else:
-            source_link = '\n\n🐘 Источник: наш слон'
+        source_link = await source_link_forwarded(message)
         resend_message = ADDED_LINK
         if message.caption:
             resend_message = message.caption + ADDED_LINK
@@ -221,10 +198,7 @@ async def audio_forwarded(message: types.Message):
 @dp.message_handler(is_forwarded=False, is_media_group=False, content_types=types.ContentType.AUDIO)
 async def audio_sent(message: types.Message):
     if message.chat.id in ALLOWED_USERS:
-        if message.from_user.full_name is not None:
-            source_link = '\n\n🐘 Источник: ' + hlink(message.from_user.full_name, message.from_user.url)
-        else:
-            source_link = '\n\n🐘 Источник: ' + message.from_user.full_name
+        source_link = await source_link_sent(message)
         resend_message = ADDED_LINK
         if message.caption:
             resend_message = message.caption + ADDED_LINK
@@ -237,14 +211,7 @@ async def audio_sent(message: types.Message):
 @dp.message_handler(is_forwarded=True, is_media_group=False, content_types=types.ContentType.ANIMATION)
 async def animation_forwarded(message: types.Message):
     if message.chat.id in ALLOWED_USERS:
-        if message.forward_from_chat and message.forward_from_chat.username is not None:
-            source_link = '\n\n🐘 Источник: ' + hlink(message.forward_from_chat.title, ('t.me/' + message.forward_from_chat.username))
-        elif message.forward_from_chat and message.forward_from_chat.username is None:
-            source_link = '\n\n🐘 Источник: ' + message.forward_from_chat.title
-        elif message.forward_from and message.forward_from.username is not None:
-            source_link = '\n\n🐘 Источник: ' + hlink(message.forward_from.full_name, ('t.me/' + message.forward_from.username))
-        else:
-            source_link = '\n\n🐘 Источник: наш слон'
+        source_link = await source_link_forwarded(message)
         resend_message = ADDED_LINK
         if message.caption:
             resend_message = message.caption + ADDED_LINK
@@ -255,10 +222,7 @@ async def animation_forwarded(message: types.Message):
 @dp.message_handler(is_forwarded=False, is_media_group=False, content_types=types.ContentType.ANIMATION)
 async def animation_sent(message: types.Message):
     if message.chat.id in ALLOWED_USERS:
-        if message.from_user.full_name is not None:
-            source_link = '\n\n🐘 Источник: ' + hlink(message.from_user.full_name, message.from_user.url)
-        else:
-            source_link = '\n\n🐘 Источник: ' + message.from_user.full_name
+        source_link = await source_link_sent(message)
         resend_message = ADDED_LINK
         if message.caption:
             resend_message = message.caption + ADDED_LINK
@@ -271,14 +235,7 @@ async def animation_sent(message: types.Message):
 @dp.message_handler(is_forwarded=True, is_media_group=False, content_types=types.ContentType.VOICE)
 async def voice_forwarded(message: types.Message):
     if message.chat.id in ALLOWED_USERS:
-        if message.forward_from_chat and message.forward_from_chat.username is not None:
-            source_link = '\n\n🐘 Источник: ' + hlink(message.forward_from_chat.title, ('t.me/' + message.forward_from_chat.username))
-        elif message.forward_from_chat and message.forward_from_chat.username is None:
-            source_link = '\n\n🐘 Источник: ' + message.forward_from_chat.title
-        elif message.forward_from and message.forward_from.username is not None:
-            source_link = '\n\n🐘 Источник: ' + hlink(message.forward_from.full_name, ('t.me/' + message.forward_from.username))
-        else:
-            source_link = '\n\n🐘 Источник: наш слон'
+        source_link = await source_link_forwarded(message)
         resend_message = ADDED_LINK
         if message.caption:
             resend_message = message.caption + ADDED_LINK
@@ -289,10 +246,7 @@ async def voice_forwarded(message: types.Message):
 @dp.message_handler(is_forwarded=False, is_media_group=False, content_types=types.ContentType.VOICE)
 async def voice_sent(message: types.Message):
     if message.chat.id in ALLOWED_USERS:
-        if message.from_user.full_name is not None:
-            source_link = '\n\n🐘 Источник: ' + hlink(message.from_user.full_name, message.from_user.url)
-        else:
-            source_link = '\n\n🐘 Источник: ' + message.from_user.full_name
+        source_link = await source_link_sent(message)
         resend_message = ADDED_LINK
         if message.caption:
             resend_message = message.caption + ADDED_LINK
@@ -306,14 +260,7 @@ async def voice_sent(message: types.Message):
 async def albums_forwarded(message: types.Message, album: List[types.Message]):
     if message.chat.id in ALLOWED_USERS:
         media_group = types.MediaGroup()
-        if message.forward_from_chat and message.forward_from_chat.username is not None:
-            source_link = '\n\n🐘 Источник: ' + hlink(message.forward_from_chat.title, ('t.me/' + message.forward_from_chat.username))
-        elif message.forward_from_chat and message.forward_from_chat.username is None:
-            source_link = '\n\n🐘 Источник: ' + message.forward_from_chat.title
-        elif message.forward_from and message.forward_from.username is not None:
-            source_link = '\n\n🐘 Источник: ' + hlink(message.forward_from.full_name, ('t.me/' + message.forward_from.username))
-        else:
-            source_link = '\n\n🐘 Источник: наш слон'
+        source_link = await source_link_forwarded(message)
         for obj in album:
             if obj['caption'] is not None:
                 resend_message = obj['caption'] + ADDED_LINK
@@ -345,10 +292,7 @@ async def albums_forwarded(message: types.Message, album: List[types.Message]):
 async def albums_sent(message: types.Message, album: List[types.Message]):
     if message.chat.id in ALLOWED_USERS:
         media_group = types.MediaGroup()
-        if message.from_user.full_name is not None:
-            source_link = '\n\n🐘 Источник: ' + hlink(message.from_user.full_name, message.from_user.url)
-        else:
-            source_link = '\n\n🐘 Источник: ' + message.from_user.full_name
+        source_link = await source_link_sent(message)
         for obj in album:
             if obj['caption'] is not None:
                 resend_message = obj['caption'] + ADDED_LINK
