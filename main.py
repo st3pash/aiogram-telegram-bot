@@ -131,6 +131,8 @@ async def video_forwarded(message: types.Message):
                 await bot.send_message(chat_id=CHANNEL_ID, text=resend_message + source_link, disable_web_page_preview=True)
             else:
                 await bot.send_video(chat_id=CHANNEL_ID, video=message.video.file_id, caption=resend_message + source_link)
+        else:
+            await bot.send_video(chat_id=CHANNEL_ID, video=message.video.file_id, caption = resend_message + source_link)
     else:
         await message.reply(text='You are not welcome here')
 
