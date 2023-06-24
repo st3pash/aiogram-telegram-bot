@@ -128,7 +128,7 @@ async def video_forwarded(message: types.Message):
             resend_message = message.caption + ADDED_LINK
             if len(resend_message) > 1024:
                 await bot.send_video(chat_id=CHANNEL_ID, video=message.video.file_id)
-                await bot.send_message(chat_id=CHANNEL_ID, text=resend_message, disable_web_page_preview=True)
+                await bot.send_message(chat_id=CHANNEL_ID, text=resend_message + source_link, disable_web_page_preview=True)
             else:
                 await bot.send_video(chat_id=CHANNEL_ID, video=message.video.file_id, caption=resend_message + source_link)
     else:
@@ -143,11 +143,11 @@ async def video_sent(message: types.Message):
             resend_message = message.caption + ADDED_LINK
             if len(resend_message) > 1024:
                 await bot.send_video(chat_id=CHANNEL_ID, video=message.video.file_id)
-                await bot.send_message(chat_id=CHANNEL_ID, text=resend_message, disable_web_page_preview=True)
+                await bot.send_message(chat_id=CHANNEL_ID, text=resend_message + source_link, disable_web_page_preview=True)
             else:
                 await bot.send_video(chat_id=CHANNEL_ID, video=message.video.file_id, caption=resend_message + source_link)
         else:
-            await bot.send_video(chat_id=CHANNEL_ID, video=message.video.file_id, caption = resend_message)
+            await bot.send_video(chat_id=CHANNEL_ID, video=message.video.file_id, caption = resend_message + source_link)
     else:
         await message.reply(text='You are not welcome here')
 
