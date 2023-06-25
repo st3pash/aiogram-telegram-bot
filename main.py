@@ -65,6 +65,15 @@ async def source_link_sent(message):
         return source_link
 
 
+async def remove_links(message=types.Message) -> str:
+    text = message.parse_entities()
+    if '<a href=' in text:
+        i = text.find('<a')
+        return text[0:i-1]
+    else:
+        return text
+
+
 # start command handler
 @dp.message_handler(commands=['start'])
 async def start_command(message: types.Message):
@@ -79,7 +88,7 @@ async def start_command(message: types.Message):
 async def text_forwarded(message: types.Message):
     if message.chat.id in ALLOWED_USERS:
         source_link = await source_link_forwarded(message)
-        resend_message = message.text + ADDED_LINK
+        resend_message = await remove_links(message) + ADDED_LINK
         await bot.send_message(chat_id=CHANNEL_ID, text=resend_message + source_link, disable_web_page_preview=True)
     else:
         await message.reply(text='You are not welcome here')
@@ -101,7 +110,7 @@ async def photo_forwarded(message: types.Message):
         source_link = await source_link_forwarded(message)
         resend_message = ADDED_LINK
         if message.caption:
-            resend_message = message.caption + ADDED_LINK
+            resend_message = await remove_links(message) + ADDED_LINK
         await bot.send_photo(chat_id=CHANNEL_ID, photo=message.photo[0]['file_id'], caption=resend_message + source_link)
     else:
         await message.reply(text='You are not welcome here')
@@ -125,12 +134,14 @@ async def video_forwarded(message: types.Message):
         source_link = await source_link_forwarded(message)
         resend_message = ADDED_LINK
         if message.caption:
-            resend_message = message.caption + ADDED_LINK
+            resend_message = await remove_links(message) + ADDED_LINK
             if len(resend_message) > 1024:
                 await bot.send_video(chat_id=CHANNEL_ID, video=message.video.file_id)
                 await bot.send_message(chat_id=CHANNEL_ID, text=resend_message + source_link, disable_web_page_preview=True)
             else:
                 await bot.send_video(chat_id=CHANNEL_ID, video=message.video.file_id, caption=resend_message + source_link)
+        else:
+            await bot.send_video(chat_id=CHANNEL_ID, video=message.video.file_id, caption = resend_message + source_link)
     else:
         await message.reply(text='You are not welcome here')
 
@@ -168,7 +179,7 @@ async def document_forwarded(message: types.Message):
         source_link = await source_link_forwarded(message)
         resend_message = ADDED_LINK
         if message.caption:
-            resend_message = message.caption + ADDED_LINK
+            resend_message = await remove_links(message) + ADDED_LINK
         await bot.send_document(chat_id=CHANNEL_ID, document=message.document.file_id, caption=resend_message + source_link)
     else:
         await message.reply(text='You are not welcome here')
@@ -192,7 +203,7 @@ async def audio_forwarded(message: types.Message):
         source_link = await source_link_forwarded(message)
         resend_message = ADDED_LINK
         if message.caption:
-            resend_message = message.caption + ADDED_LINK
+            resend_message = await remove_links(message) + ADDED_LINK
         await bot.send_audio(chat_id=CHANNEL_ID, audio=message.audio.file_id, caption=resend_message + source_link)
     else:
         await message.reply(text='You are not welcome here')
@@ -216,7 +227,7 @@ async def animation_forwarded(message: types.Message):
         source_link = await source_link_forwarded(message)
         resend_message = ADDED_LINK
         if message.caption:
-            resend_message = message.caption + ADDED_LINK
+            resend_message = await remove_links(message) + ADDED_LINK
         await bot.send_animation(chat_id=CHANNEL_ID, animation=message.animation.file_id, caption=resend_message + source_link)
     else:
         await message.reply(text='You are not welcome here')
@@ -240,7 +251,7 @@ async def voice_forwarded(message: types.Message):
         source_link = await source_link_forwarded(message)
         resend_message = ADDED_LINK
         if message.caption:
-            resend_message = message.caption + ADDED_LINK
+            resend_message = await remove_links(message) + ADDED_LINK
         await bot.send_voice(chat_id=CHANNEL_ID, voice=message.voice.file_id, caption=resend_message + source_link)
     else:
         await message.reply(text='You are not welcome here')
@@ -265,7 +276,11 @@ async def albums_forwarded(message: types.Message, album: List[types.Message]):
         source_link = await source_link_forwarded(message)
         for obj in album:
             if obj['caption'] is not None:
-                resend_message = obj['caption'] + ADDED_LINK
+                text = obj.parse_entities()
+                if '<a href=' in text:
+                    i = text.find('<a')
+                    text = text[0:i-1]
+                resend_message = text + ADDED_LINK
                 break
             else:
                 resend_message = ADDED_LINK
